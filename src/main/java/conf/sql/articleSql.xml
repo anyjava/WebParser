@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="article" >
+	<insert id="insert" parameterType="net.anyjava.webParser1.vo.ArticleVO">
+		insert into article_list (id,site_no, subject, url, writer, date, hit )
+		values (#{articleNo},'10',#{subject},#{url},#{nick},#{date},#{hit})
+	</insert>
+	
+	<select id="selectMax" resultType="int">
+		SELECT IFNULL( MAX( id ), 0 )
+		  FROM article_list
+	</select>
+</mapper>
