@@ -1,2 +1,3 @@
 target
 output.log*
+src/main/java/conf/db.properties
