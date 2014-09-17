@@ -10,7 +10,15 @@
 	</insert>
 	
 	<select id="selectMax" resultType="int">
-		SELECT IFNULL( MAX( id ), 0 )
-		  FROM article_list
+		SELECT MAX( a.id )
+		FROM (
+    		SELECT IFNULL( MAX( id ), 0 ) as id
+	    	  FROM article_list
+		      
+	    	  UNION ALL
+		  
+	    	SELECT IFNULL( MAX(id), 0 ) as id
+	    	FROM img_list
+	    ) a
 	</select>
 </mapper>

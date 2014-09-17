@@ -19,5 +19,6 @@
 	<mappers>
 		<mapper resource="testSql.xml" />
 		<mapper resource="sql/articleSql.xml" />
+		<mapper resource="sql/imgSql.xml" />
 	</mappers>
 </configuration>

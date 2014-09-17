@@ -5,7 +5,10 @@ import java.util.Iterator;
 
 import net.anyjava.webParser1.dao.ArticleListDao;
 import net.anyjava.webParser1.dao.ArticleListDaoImp;
+import net.anyjava.webParser1.dao.ImgListDao;
+import net.anyjava.webParser1.dao.ImgListDaoImp;
 import net.anyjava.webParser1.vo.ArticleVO;
+import net.anyjava.webParser1.vo.ImgVO;
 
 import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -24,6 +27,7 @@ public class ClienParser {
 	private ArrayList<ArticleVO> clienVOList;
 	
 	private ArticleListDao dao;
+	private ImgListDao imgDao;
 
 	private int avg 		  = 0;
 	private long maxArticleId = 0;
@@ -31,6 +35,7 @@ public class ClienParser {
 	public ClienParser() {
 		clienVOList = new ArrayList<ArticleVO>();
 		dao         = new ArticleListDaoImp();
+		imgDao      = new ImgListDaoImp();
 
 		log.info(" VOlist size1=["+clienVOList.size()+"]");
 
@@ -57,15 +62,49 @@ public class ClienParser {
 		
 		
 		avg = avg / clienVOList.size();
-		avg = (int) ( avg * 1.5 );
+		avg = (int) ( avg * 1.6 );
 		
 		for( ArticleVO vo : clienVOList ) {
 			if( Integer.parseInt( vo.getHit() ) > avg ) {
 				log.info( vo.toString() );
 				log.info( "RESULT=>" + dao.insertArticle( vo ) );
 			}
+			
+			// 이미지 가져오는 부분을 추가하도록 하자.
+			parseImage( vo );
 		}
 		
+	}
+	
+	private void parseImage( ArticleVO vo ) {
+		String response = WebGetter.wget( vo.getUrl() );
+		
+		ImgVO imgVo;
+		
+		Document doc = Jsoup.parse(response);
+		Elements rows = doc.select(".attachedImage");
+
+		String imgUrl = "";
+		int imgSeq = 0;
+
+		for (Element row : rows) {
+			imgSeq = 0;
+
+			for( Element img : row.children() ) {
+				imgUrl = img.attr("src");
+				log.info("SON!! IMG=>" + imgUrl );
+
+				imgVo = new ImgVO();
+
+				imgVo.setId( vo.getArticleNo() );
+				imgVo.setImgSeq( "" + imgSeq++ );
+				imgVo.setSubject( vo.getSubject() );
+				imgVo.setUrl( imgUrl );
+				
+				imgDao.insertImg( imgVo );
+
+			}
+		}
 	}
 	
 	
