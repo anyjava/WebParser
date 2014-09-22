@@ -1,6 +1,8 @@
 package net.anyjava.webParser1;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 
 import net.anyjava.webParser1.dao.ArticleListDao;
@@ -68,10 +70,11 @@ public class ClienParser {
 			if( Integer.parseInt( vo.getHit() ) > avg ) {
 				log.info( vo.toString() );
 				log.info( "RESULT=>" + dao.insertArticle( vo ) );
+
+				// 이미지 가져오는 부분을 추가하도록 하자.
+				parseImage( vo );
 			}
 			
-			// 이미지 가져오는 부분을 추가하도록 하자.
-			parseImage( vo );
 		}
 		
 	}
@@ -88,7 +91,6 @@ public class ClienParser {
 		int imgSeq = 0;
 
 		for (Element row : rows) {
-			imgSeq = 0;
 
 			for( Element img : row.children() ) {
 				imgUrl = img.attr("src");
@@ -97,16 +99,39 @@ public class ClienParser {
 				imgVo = new ImgVO();
 
 				imgVo.setId( vo.getArticleNo() );
-				imgVo.setImgSeq( "" + imgSeq++ );
+				imgVo.setImgSeq( "" + imgSeq );
 				imgVo.setSubject( vo.getSubject() );
-				imgVo.setUrl( imgUrl );
+//				imgVo.setUrl( imgUrl );
+				
+				imgVo.setUrl( downloadImage( imgUrl, imgVo.getId() + "-" + imgSeq , this.log ) );
 				
 				imgDao.insertImg( imgVo );
+				
+				imgSeq++;
 
 			}
 		}
 	}
 	
+	private String downloadImage( String url, String downFileName, Logger log ) {
+		String fileLastName = "";
+		String path     = "";
+		
+        Date d = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        
+        
+        path = "/var/www/html/upload/" + sdf.format(d) + "/";
+		
+		fileLastName = url.substring( url.length()-4, url.length() );
+		if( null == FileDownloader.download( url, path, downFileName + fileLastName, log ) ) {
+			log.error(" FileDownload ERROR!!");
+			System.exit(0);
+		}
+		
+		return sdf.format(d) + "/" + downFileName + fileLastName;
+			
+	}
 	
 	private void parse() {
 		String response = WebGetter.wget( URL );
